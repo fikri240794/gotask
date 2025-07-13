@@ -1,34 +1,80 @@
-# GoTask - High-Performance Concurrent Task Execution
+<div align="center">
 
-[![Go Version](https://img.shields.io/badge/go-1.18+-blue.svg)](https://golang.org)
+# 🚀 GoTask
 
-A lightweight, high-performance Go library for managing concurrent goroutines with controlled concurrency limits. GoTask provides two main interfaces: `Task` for simple concurrent execution and `ErrorTask` for error-aware concurrent execution with context cancellation.
+### ⚡ Concurrent Task Execution Library for Go
 
-## Features
+*🎯 A simple Go library for managing concurrent goroutines with concurrency limits and error handling*
 
-- **Controlled Concurrency**: Limit the number of simultaneously running goroutines
-- **High Performance**: Optimized for minimal overhead and maximum throughput
-- **Error Handling**: Built-in error propagation and context cancellation
-- **Monitoring**: Real-time tracking of active and submitted tasks
-- **Context Support**: Full context.Context integration for cancellation and timeouts
-- **Zero Dependencies**: Pure Go implementation with no external dependencies
+</div>
 
-## Performance Characteristics
+---
 
-- **Default Concurrency**: Intelligently defaults to `2 × CPU cores` for mixed I/O/CPU workloads
-- **Low Overhead**: Minimal memory allocation and fast task scheduling
-- **Scalable**: Tested with thousands of concurrent tasks
-- **Resource Efficient**: Optimized for low-spec hardware with high traffic
+## 🌟 Why GoTask?
 
-## Installation
+GoTask provides two interfaces for concurrent execution: 
+- **`Task`** - Simple concurrent execution with concurrency control
+- **`ErrorTask`** - Error-aware execution with context cancellation
+
+Designed for applications that need controlled concurrency and proper error handling. 💪
+
+## ✨ Features
+
+<table>
+<tr>
+<td>
+
+### 🎛️ **Controlled Concurrency**
+Limit simultaneously running goroutines with configurable defaults
+
+</td>
+<td>
+
+### ⚡ **Task Management** 
+Structured approach to concurrent task execution
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🛡️ **Error Handling**
+Built-in error propagation and context cancellation
+
+</td>
+<td>
+
+### 📊 **Task Monitoring**
+Track active and submitted tasks with counters
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔧 **Context Support**
+Full `context.Context` integration for cancellation
+
+</td>
+<td>
+
+### 🪶 **Simple API**
+Clean interface with no external dependencies
+
+</td>
+</tr>
+</table>
+
+## 📦 Installation
 
 ```bash
 go get github.com/fikri240794/gotask
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
-### Basic Task Usage
+<details>
+<summary><b>🎯 Basic Task Usage</b> - Click to expand</summary>
 
 ```go
 package main
@@ -40,25 +86,42 @@ import (
 )
 
 func main() {
-    // Create task with concurrency limit of 2
+    // 🎛️ Create task with concurrency limit of 2
     task := gotask.NewTask(2)
 
-    // Submit multiple tasks
+    // 📋 Submit multiple tasks
     for i := 0; i < 5; i++ {
         taskNum := i + 1
         task.Go(func() {
-            fmt.Printf("Task %d executing\n", taskNum)
+            fmt.Printf("🏃 Task %d executing\n", taskNum)
             time.Sleep(100 * time.Millisecond)
         })
     }
 
-    // Wait for all tasks to complete
+    // ⏳ Wait for all tasks to complete
     task.Wait()
-    fmt.Println("All tasks completed!")
+    fmt.Println("✅ All tasks completed!")
+    
+    // 📊 Check statistics
+    fmt.Printf("📈 Total submitted: %d\n", task.TotalSubmitted())
 }
 ```
 
-### ErrorTask with Error Handling
+**Output:**
+```
+🏃 Task 1 executing
+🏃 Task 2 executing
+🏃 Task 3 executing
+🏃 Task 4 executing
+🏃 Task 5 executing
+✅ All tasks completed!
+📈 Total submitted: 5
+```
+
+</details>
+
+<details>
+<summary><b>🛡️ ErrorTask with Smart Error Handling</b> - Click to expand</summary>
 
 ```go
 package main
@@ -71,132 +134,104 @@ import (
 )
 
 func main() {
-    // Create error-aware task with context
+    // 🎯 Create error-aware task with context
     errTask, taskCtx := gotask.NewErrorTask(context.Background(), 3)
 
-    // Submit tasks that may fail
+    // 📋 Submit tasks that may fail
     for i := 0; i < 5; i++ {
         taskNum := i + 1
         errTask.Go(func() error {
-            // Use taskCtx to respect cancellation
+            // 🔍 Use taskCtx to respect cancellation
             select {
             case <-taskCtx.Done():
-                return nil // Cancelled
+                fmt.Printf("❌ Task %d cancelled\n", taskNum)
+                return nil // Cancelled gracefully
             default:
                 if taskNum == 3 {
-                    return errors.New("task failed")
+                    fmt.Printf("💥 Task %d failed!\n", taskNum)
+                    return errors.New("simulated failure")
                 }
-                fmt.Printf("Task %d completed\n", taskNum)
+                fmt.Printf("✅ Task %d completed\n", taskNum)
                 return nil
             }
         })
     }
 
-    // Wait and handle errors
+    // ⏳ Wait and handle errors
     if err := errTask.Wait(); err != nil {
-        fmt.Printf("Error occurred: %v\n", err)
+        fmt.Printf("🚨 Error occurred: %v\n", err)
+        fmt.Printf("📊 Total submitted: %d\n", errTask.TotalSubmitted())
     }
 }
 ```
 
-## API Reference
+**Output:**
+```
+✅ Task 1 completed
+✅ Task 2 completed
+💥 Task 3 failed!
+❌ Task 4 cancelled
+❌ Task 5 cancelled
+🚨 Error occurred: simulated failure
+📊 Total submitted: 5
+```
 
-### Task Interface
+</details>
+
+## 📖 API Reference
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎯 **Task Interface**
 
 ```go
 type Task interface {
-    // Go executes function in goroutine, respecting concurrency limit
+    // 🚀 Execute function in goroutine
     Go(task func())
     
-    // Wait blocks until all submitted tasks complete
+    // ⏳ Wait for all tasks to complete
     Wait()
     
-    // ActiveCount returns current number of running tasks
+    // 📊 Get current active tasks
     ActiveCount() int64
     
-    // TotalSubmitted returns total number of submitted tasks
+    // 📈 Get total submitted tasks  
     TotalSubmitted() int64
 }
 ```
 
-### ErrorTask Interface
+**💡 Perfect for:** Simple concurrent operations without error handling
+
+</td>
+<td width="50%">
+
+### 🛡️ **ErrorTask Interface**
 
 ```go
 type ErrorTask interface {
-    // Go executes function with error handling
+    // 🚀 Execute function with error handling
     Go(task func() error)
     
-    // Wait blocks until completion or first error
+    // ⏳ Wait until completion or first error
     Wait() error
     
-    // ActiveCount returns current number of running tasks
+    // 📊 Get current active tasks
     ActiveCount() int64
     
-    // TotalSubmitted returns total number of submitted tasks
+    // 📈 Get total submitted tasks
     TotalSubmitted() int64
     
-    // Context returns the cancellable context
+    // 🔧 Get cancellable context
     Context() context.Context
 }
 ```
 
-## Concurrency Guidelines
+**💡 Perfect for:** Error-aware operations with cancellation support
 
-### Choosing the Right Concurrency Level
+</td>
+</tr>
+</table>
 
-The `maxConcurrentTask` parameter should be chosen based on your workload:
-
-- **CPU-bound tasks**: Use `runtime.NumCPU()` or slightly less
-- **I/O-bound tasks**: Use `2-10 × runtime.NumCPU()` depending on I/O wait time
-- **Mixed workloads**: Start with `2 × runtime.NumCPU()` (default when `maxConcurrentTask <= 0`)
-- **Low-spec hardware with high traffic**: Use `1-2 × runtime.NumCPU()` to prevent resource exhaustion
-
-### Performance Tips
-
-1. **Batch small tasks** to reduce scheduling overhead
-2. **Use ErrorTask** when you need error handling and cancellation
-3. **Monitor active tasks** in production using `ActiveCount()`
-4. **Profile memory usage** under high load to tune concurrency limits
-5. **Use context timeouts** with ErrorTask for better resource management
-
-## Examples
-
-See the [examples](examples/) directory for comprehensive usage examples including:
-
-- Basic task execution
-- Task monitoring and metrics
-- Error handling and cancellation
-- Performance comparison scenarios
-- Real-world usage patterns
-
-## Testing
-
-Run the complete test suite:
-
-```bash
-# Run all tests with coverage
-go test -v -cover ./...
-
-# Run performance benchmarks
-go test -v -bench=. -benchmem ./...
-
-# Run specific test categories
-go test -v -run=TestTask ./...           # Task tests
-go test -v -run=TestErrorTask ./...      # ErrorTask tests
-go test -v -run=BenchmarkTask ./...      # Task benchmarks
-go test -v -run=BenchmarkErrorTask ./... # ErrorTask benchmarks
-
-# Performance regression tests
-go test -v -run=TestPerformanceRegression ./...
-```
-
-### Test Coverage
-
-The test suite provides 100% code coverage with tests for:
-
-- **Functional Testing**: All API methods and edge cases
-- **Concurrency Testing**: Thread safety and race condition detection
-- **Performance Testing**: Throughput and latency benchmarks
-- **Error Handling**: Error propagation and context cancellation
-- **Resource Management**: Memory allocation and goroutine lifecycle
-- **Regression Testing**: Performance baseline validation
+---
